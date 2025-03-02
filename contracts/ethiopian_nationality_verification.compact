@@ -1,0 +1,96 @@
+pragma language_version >= 0.14.0;
+import CompactStandardLibrary;
+
+// Ledger to store nationality verifications
+// Maps a user's ID to their verification status
+export ledger nationality_verifications: Map<Field, Boolean>;
+
+// Structure for an Ethiopian Nationality credential
+struct EthiopianNationalityCredential {
+    // Unique identifier for the credential
+    id: Field,
+    // ID of the issuing authority (e.g., Ministry of Immigration)
+    issuer: Field,
+    // When the credential was issued (Unix timestamp)
+    issuedAt: Field,
+    // When the credential expires (Unix timestamp)
+    expiresAt: Field,
+    // Subject's details
+    subject: Field,
+    // Nationality code (hashed)
+    nationality: Field,
+    // Signature components from the issuer
+    signature: Vector<2, Field>
+}
+
+// A known issuer of nationality credentials (Ethiopian Ministry of Immigration)
+const AUTHORIZED_ISSUER = 0x7382619ab34c51def9012ae5b7290abd8f1c47e2d45637d39f28c5a;
+
+// Ethiopian nationality code (hashed representation)
+const ETHIOPIAN_NATIONALITY_CODE = 0x44834759abd23c19ef3814765d3901bfc46729abef47182d;
+
+// Circuit to check if a credential is currently valid (not expired)
+circuit is_credential_valid(credential: EthiopianNationalityCredential, current_time: Field): Boolean {
+    // Convert to Uint for comparison
+    const expires_at_uint = credential.expiresAt as Uint<64>;
+    const current_time_uint = current_time as Uint<64>;
+    
+    // Check if the credential has not expired
+    return expires_at_uint >= current_time_uint;
+}
+
+// Circuit to verify if the issuer is authorized
+circuit is_issuer_authorized(issuer: Field): Boolean {
+    return issuer == AUTHORIZED_ISSUER;
+}
+
+// Circuit to verify Ethiopian nationality
+circuit verify_ethiopian_nationality(
+    credential: EthiopianNationalityCredential, 
+    current_time: Field
+): Boolean {
+    // Check if the issuer is authorized
+    const issuer_valid = is_issuer_authorized(credential.issuer);
+    
+    // Verify the credential is not expired
+    const not_expired = is_credential_valid(credential, current_time);
+    
+    // Verify the nationality code matches Ethiopian code
+    const is_ethiopian = credential.nationality == ETHIOPIAN_NATIONALITY_CODE;
+    
+    // All conditions must be true
+    return issuer_valid && not_expired && is_ethiopian;
+}
+
+// The main public function that verifies Ethiopian nationality
+// and records the result on the ledger
+export circuit verify_and_record_nationality(
+    credential: EthiopianNationalityCredential, 
+    current_time: Field
+): [] {
+    // Run the verification
+    const is_valid = verify_ethiopian_nationality(credential, current_time);
+    
+    // Record the result in the ledger
+    // We disclose the user ID and verification result to make them public
+    nationality_verifications.insert(disclose(credential.subject), disclose(is_valid));
+}
+
+// Witness function that will be implemented at runtime
+// to provide test credentials
+witness create_test_credential(): EthiopianNationalityCredential;
+
+// Test circuit for verification
+export circuit test_verification(): [] {
+    // Get a test credential
+    const test_credential = create_test_credential();
+    
+    // Current time for testing (could be provided as a parameter)
+    const current_time = 1677609600; // March 1, 2023
+    
+    // Verify the credential
+    verify_and_record_nationality(test_credential, current_time);
+    
+    // Check the result in the ledger
+    const is_verified = nationality_verifications.lookup(test_credential.subject);
+} 

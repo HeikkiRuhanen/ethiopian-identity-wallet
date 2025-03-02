@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ethiopian Identity Wallet
 
-## Getting Started
+A decentralized identity wallet application for Ethiopian citizens that leverages privacy-preserving smart contracts to verify nationality, age, and service eligibility without exposing sensitive personal data.
 
-First, run the development server:
+## Features
+
+- **Privacy-Preserving Verification**: Verify Ethiopian nationality, age, and service eligibility without revealing actual personal information.
+- **Smart Contract Integration**: Uses Compact language smart contracts for secure, on-chain verification.
+- **Credential Management**: Create and manage verifiable credentials for Ethiopian identity.
+- **Zero-Knowledge Proofs**: Generate and verify proofs using the Midnight proof system.
+
+## Smart Contracts
+
+The project includes three Compact smart contracts:
+
+1. **Ethiopian Nationality Verification**: Verifies a user's Ethiopian citizenship without revealing their personal information.
+2. **Age Verification**: Verifies a user's age without revealing their date of birth.
+3. **Service Eligibility**: Combines nationality and age verification to determine eligibility for various Ethiopian services.
+
+## Prerequisites
+
+- Node.js 16+
+- npm 8+
+- Compactc 0.21.0+ (Compact language compiler)
+
+## Installation
+
+1. Install global dependencies:
+   ```bash
+   npm install -g @firmachain/compactc
+   ```
+
+2. Clone the repository and navigate to the project directory:
+   ```bash
+   cd examples/identity-wallet
+   ```
+
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+## Quick Start
+
+The easiest way to run the application is using the provided run script:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+./run.sh
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This script will:
+1. Check if Compactc is installed
+2. Compile all Compact contracts
+3. Start the Next.js development server
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Once started, the application will be available at http://localhost:3000.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Manual Setup
 
-## Learn More
+If you prefer to set up manually, follow these steps:
 
-To learn more about Next.js, take a look at the following resources:
+1. Compile the Compact contracts:
+   ```bash
+   npx ts-node scripts/compile-contracts.ts
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Using the Application
 
-## Deploy on Vercel
+1. **Create or Import Credentials**:
+   - Navigate to the Credential Manager
+   - Create a new Ethiopian Identity credential
+   - Fill in the required information
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. **Generate Proofs**:
+   - Navigate to the Proof Generator
+   - Select a contract and function
+   - Choose a credential
+   - Generate a proof
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. **Verify Proofs**:
+   - Submit the generated proof for verification
+   - View the verification result
+
+## Development
+
+### Directory Structure
+
+- `/app`: Next.js application code
+- `/contracts`: Compact language smart contracts
+- `/app/compiled-contracts`: Compiled contract output (generated during build)
+- `/app/components`: React components
+- `/app/services`: Service classes for API interactions
+- `/app/types`: TypeScript type definitions
+
+### Smart Contract Development
+
+To add or modify Compact contracts:
+
+1. Edit or create a new contract in the `/contracts` directory
+2. Compile the contract using the compile-contracts script
+3. Update the MidnightAPI service to include the new contract
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- [Midnight Blockchain](https://input-output-hk.github.io/midnight/)
+- [W3C Verifiable Credentials](https://www.w3.org/TR/vc-data-model/)
+- [Cardano Developer Portal](https://developers.cardano.org/)
