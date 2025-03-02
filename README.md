@@ -53,7 +53,14 @@ This script will:
 2. Compile all Compact contracts
 3. Start the Next.js development server
 
-Once started, the application will be available at http://localhost:3000.
+Alternatively, if you're in the root directory of the monorepo, you can use:
+
+```bash
+# From the midnight-examples root directory
+npm run identity-wallet
+```
+
+Once started, the application will be available at http://localhost:3000 (or another port if 3000 is already in use).
 
 ## Manual Setup
 
