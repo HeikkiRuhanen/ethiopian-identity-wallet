@@ -1,154 +1,67 @@
 pragma language_version >= 0.14.0;
 import CompactStandardLibrary;
-
-// Ledger to store age verification results
-// Maps a user's ID to their age verification status for specific thresholds
 export ledger age_verifications: Map<Field, Boolean>;
-
-// Structure for an Ethiopian ID credential with date of birth
 struct EthiopianIdCredential {
-    // Unique identifier for the credential
-    id: Field,
-    // ID of the issuing authority
-    issuer: Field,
-    // When the credential was issued (Unix timestamp)
-    issuedAt: Field,
-    // When the credential expires (Unix timestamp)
-    expiresAt: Field,
-    // Subject's identifier
-    subject: Field,
-    // Date of birth in days since Unix epoch
-    birthDateInDays: Field,
-    // Nationality code (hashed)
-    nationality: Field,
-    // Signature components from the issuer
-    signature: Vector<2, Field>
+id: Field,
+issuer: Field,
+issuedAt: Field,
+expiresAt: Field,
+subject: Field,
+birthDateInDays: Field,
+nationality: Field,
+signature: Vector<2, Field>
 }
-
-// A known issuer of ID credentials (Ethiopian Ministry of Immigration)
-const AUTHORIZED_ISSUER = 0x7382619ab34c51def9012ae5b7290abd8f1c47e2d45637d39f28c5a;
-
-// Days in a year (approximated for simplicity)
-const DAYS_IN_YEAR = 365;
-
-// Circuit to calculate age in years based on birth date and current date
+circuit get_authorized_issuer(): Field {
+return 123456789012345678901234567890;
+}
+circuit get_days_in_year(): Field {
+return 365;
+}
 circuit calculate_age(birth_date_days: Field, current_date_days: Field): Field {
-    // Convert to Uint for comparison and calculation
-    const birth_uint = birth_date_days as Uint<32>;
-    const current_uint = current_date_days as Uint<32>;
-    
-    // Calculate days difference
-    const days_diff = current_uint - birth_uint;
-    
-    // Calculate years (integer division)
-    return days_diff / DAYS_IN_YEAR;
+const birth_uint = birth_date_days as Uint<32>;
+const current_uint = current_date_days as Uint<32>;
+const days_diff = current_uint - birth_uint;
+return days_diff / get_days_in_year();
 }
-
-// Circuit to check if a person is above a certain age threshold
 circuit is_above_age(birth_date_days: Field, current_date_days: Field, age_threshold: Field): Boolean {
-    // Calculate age
-    const age = calculate_age(birth_date_days, current_date_days);
-    
-    // Convert to Uint for comparison
-    const age_uint = age as Uint<16>;
-    const threshold_uint = age_threshold as Uint<16>;
-    
-    // Check if age is greater than or equal to threshold
-    return age_uint >= threshold_uint;
+const age = calculate_age(birth_date_days, current_date_days);
+const age_uint = age as Uint<16>;
+const threshold_uint = age_threshold as Uint<16>;
+return age_uint >= threshold_uint;
 }
-
-// Circuit to verify if the credential is not expired
 circuit is_credential_valid(credential: EthiopianIdCredential, current_time: Field): Boolean {
-    // Convert to Uint for comparison
-    const expires_at_uint = credential.expiresAt as Uint<64>;
-    const current_time_uint = current_time as Uint<64>;
-    
-    // Check if the credential has not expired
-    return expires_at_uint >= current_time_uint;
+const expires_at_uint = credential.expiresAt as Uint<64>;
+const current_time_uint = current_time as Uint<64>;
+return expires_at_uint >= current_time_uint;
 }
-
-// Circuit to verify if the issuer is authorized
 circuit is_issuer_authorized(issuer: Field): Boolean {
-    return issuer == AUTHORIZED_ISSUER;
+return issuer == get_authorized_issuer();
 }
-
-// The main public function that verifies a user's age
-// and records the result on the ledger
 export circuit verify_and_record_age(
-    credential: EthiopianIdCredential, 
-    current_date_days: Field,
-    current_time: Field,
-    age_threshold: Field
+credential: EthiopianIdCredential, 
+current_date_days: Field,
+current_time: Field,
+age_threshold: Field
 ): [] {
-    // Verify the credential is from an authorized issuer
-    const issuer_valid = is_issuer_authorized(credential.issuer);
-    
-    // Verify the credential is not expired
-    const not_expired = is_credential_valid(credential, current_time);
-    
-    // Check if age is above threshold
-    const above_age = is_above_age(credential.birthDateInDays, current_date_days, age_threshold);
-    
-    // Verification is valid only if all conditions are met
-    const is_valid = issuer_valid && not_expired && above_age;
-    
-    // Create a unique key for this verification that includes the threshold
-    // This allows a single user to have different verifications for different age thresholds
-    const verification_key = credential.subject + age_threshold;
-    
-    // Record the result in the ledger
-    // We disclose the verification key and result to make them public
-    age_verifications.insert(disclose(verification_key), disclose(is_valid));
+const issuer_valid = is_issuer_authorized(credential.issuer);
+const not_expired = is_credential_valid(credential, current_time);
+const above_age = is_above_age(credential.birthDateInDays, current_date_days, age_threshold);
+const is_valid = issuer_valid && not_expired && above_age;
+const verification_key = credential.subject + age_threshold;
+age_verifications.insert(disclose(verification_key), disclose(is_valid));
 }
-
-// Function to create a compact service verification proof
-// This allows a service to verify a user is above an age threshold
-// without revealing their exact age or other personal details
-export circuit create_age_verification_proof(
-    credential: EthiopianIdCredential,
-    current_date_days: Field,
-    current_time: Field,
-    age_threshold: Field
-): Field {
-    // First verify all conditions
-    const issuer_valid = is_issuer_authorized(credential.issuer);
-    const not_expired = is_credential_valid(credential, current_time);
-    const above_age = is_above_age(credential.birthDateInDays, current_date_days, age_threshold);
-    
-    // Calculate result
-    const is_valid = issuer_valid && not_expired && above_age;
-    
-    // Return 1 for valid, 0 for invalid
-    return is_valid ? 1 : 0;
-}
-
-// Witness function that will be implemented at runtime
-// to provide test credentials
 witness create_test_id_credential(): EthiopianIdCredential;
-
-// Test circuit for age verification
 export circuit test_age_verification(): [] {
-    // Get a test credential
-    const test_credential = create_test_id_credential();
-    
-    // Current time for testing (Unix timestamp)
-    const current_time = 1677609600; // March 1, 2023
-    
-    // Current date in days since Unix epoch
-    const current_date_days = current_time / 86400; // Seconds in a day
-    
-    // Age threshold for testing
-    const age_threshold = 18;
-    
-    // Verify and record age verification
-    verify_and_record_age(
-        test_credential,
-        current_date_days,
-        current_time,
-        age_threshold
-    );
-    
-    // Check the result in the ledger
-    const verification_key = test_credential.subject + age_threshold;
-    const is_verified = age_verifications.lookup(verification_key);
+const test_credential = create_test_id_credential();
+const current_time = 1677609600;
+const current_date_days = current_time / 86400;
+const age_threshold = 18;
+verify_and_record_age(
+test_credential,
+current_date_days,
+current_time,
+age_threshold
+);
+const verification_key = test_credential.subject + age_threshold;
+const is_verified = age_verifications.lookup(verification_key);
 } 

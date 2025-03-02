@@ -1,180 +1,131 @@
 pragma language_version >= 0.14.0;
 import CompactStandardLibrary;
 
-// Ledger to store eligibility for Ethiopian services
+// Ledger to store service eligibility verifications
 export ledger service_eligibility: Map<Field, Boolean>;
 
-// Structure for a complete Ethiopian identity credential
+// Structure for an Ethiopian identity credential
 struct EthiopianIdentityCredential {
-    // Unique identifier for the credential
     id: Field,
-    // ID of the issuing authority
     issuer: Field,
-    // When the credential was issued (Unix timestamp)
     issuedAt: Field,
-    // When the credential expires (Unix timestamp)
     expiresAt: Field,
-    // Subject's identifier
     subject: Field,
-    // Full name (hashed)
     fullName: Field,
-    // Date of birth in days since Unix epoch
     birthDateInDays: Field,
-    // Nationality code (hashed)
     nationality: Field,
-    // Region (hashed)
     region: Field,
-    // Kebele (local district) (hashed)
     kebele: Field,
-    // National ID number (hashed)
     nationalIdNumber: Field,
-    // Signature components from the issuer
     signature: Vector<2, Field>
 }
 
-// Structure representing a service requiring verification
+// Structure for service requirements
 struct ServiceRequirement {
-    // Service identifier
     id: Field,
-    // Minimum age required
     minimumAge: Field,
-    // Whether Ethiopian nationality is required
     requiresEthiopianNationality: Boolean,
-    // Specific region required (0 for any region)
     requiredRegion: Field
 }
 
-// Constants
-const AUTHORIZED_ISSUER = 0x7382619ab34c51def9012ae5b7290abd8f1c47e2d45637d39f28c5a;
-const ETHIOPIAN_NATIONALITY_CODE = 0x44834759abd23c19ef3814765d3901bfc46729abef47182d;
-const DAYS_IN_YEAR = 365;
-
-// Circuit to calculate age in years
-circuit calculate_age(birth_date_days: Field, current_date_days: Field): Field {
-    const birth_uint = birth_date_days as Uint<32>;
-    const current_uint = current_date_days as Uint<32>;
-    
-    const days_diff = current_uint - birth_uint;
-    return days_diff / DAYS_IN_YEAR;
+// Helper circuit to return the authorized issuer value
+circuit get_authorized_issuer(): Field {
+    return 123456789012345678901234567890;
 }
 
-// Circuit to check if a person meets the minimum age requirement
-circuit meets_age_requirement(birth_date_days: Field, current_date_days: Field, minimum_age: Field): Boolean {
-    const age = calculate_age(birth_date_days, current_date_days);
-    
-    const age_uint = age as Uint<16>;
-    const minimum_uint = minimum_age as Uint<16>;
-    
-    return age_uint >= minimum_uint;
+// Helper circuit to return the Ethiopian nationality code
+circuit get_ethiopian_nationality_code(): Field {
+    return 987654321098765432109876543210;
 }
 
-// Circuit to verify if the credential is valid (not expired)
+// Helper circuit to return days in a year
+circuit get_days_in_year(): Field {
+    return 365;
+}
+
+// Calculate age in years from birth date in days
+circuit calculate_age(birthDateInDays: Field, currentDateInDays: Field): Field {
+    const age_in_days = (currentDateInDays - birthDateInDays) as Uint<32>;
+    return age_in_days / get_days_in_year();
+}
+
+// Check if a person meets the minimum age requirement
+circuit meets_age_requirement(birthDateInDays: Field, currentDateInDays: Field, minimumAge: Field): Boolean {
+    const age = calculate_age(birthDateInDays, currentDateInDays);
+    return (age as Uint<16>) >= (minimumAge as Uint<16>);
+}
+
+// Circuit to check if a credential is currently valid (not expired)
 circuit is_credential_valid(credential: EthiopianIdentityCredential, current_time: Field): Boolean {
     const expires_at_uint = credential.expiresAt as Uint<64>;
     const current_time_uint = current_time as Uint<64>;
-    
     return expires_at_uint >= current_time_uint;
 }
 
 // Circuit to verify if the issuer is authorized
 circuit is_issuer_authorized(issuer: Field): Boolean {
-    return issuer == AUTHORIZED_ISSUER;
+    return issuer == get_authorized_issuer();
 }
 
-// Circuit to check if nationality matches Ethiopian nationality
+// Verify Ethiopian nationality
 circuit is_ethiopian(nationality: Field): Boolean {
-    return nationality == ETHIOPIAN_NATIONALITY_CODE;
+    return nationality == get_ethiopian_nationality_code();
 }
 
-// Circuit to check if the region matches the required region (if any)
-circuit is_region_match(region: Field, required_region: Field): Boolean {
-    // If required_region is 0, any region is acceptable
-    if (required_region == 0) {
-        return true;
-    }
-    
-    // Otherwise, regions must match
-    return region == required_region;
+// Check if region matches required region (if any)
+circuit matches_region(credentialRegion: Field, requiredRegion: Field): Boolean {
+    return requiredRegion == 0 || credentialRegion == requiredRegion;
 }
 
-// The main circuit that verifies if a person is eligible for a service
-export circuit verify_service_eligibility(
+// Main circuit to verify service eligibility
+circuit verify_service_eligibility(
     credential: EthiopianIdentityCredential,
     service: ServiceRequirement,
-    current_date_days: Field,
-    current_time: Field
+    currentDateInDays: Field,
+    currentTime: Field
 ): Boolean {
-    // Basic credential validations
+    const credential_valid = is_credential_valid(credential, currentTime);
     const issuer_valid = is_issuer_authorized(credential.issuer);
-    const not_expired = is_credential_valid(credential, current_time);
-    
-    // Check if age requirement is met
-    const age_requirement_met = meets_age_requirement(
+    const meets_age = meets_age_requirement(
         credential.birthDateInDays,
-        current_date_days,
+        currentDateInDays,
         service.minimumAge
     );
-    
-    // Nationality check if required
-    let nationality_requirement_met = true;
-    if (service.requiresEthiopianNationality) {
-        nationality_requirement_met = is_ethiopian(credential.nationality);
-    }
-    
-    // Region check if required
-    const region_requirement_met = is_region_match(
-        credential.region,
-        service.requiredRegion
-    );
-    
-    // All requirements must be met
-    return issuer_valid && 
-           not_expired && 
-           age_requirement_met && 
-           nationality_requirement_met && 
-           region_requirement_met;
+    const nationality_check = !service.requiresEthiopianNationality || 
+                             is_ethiopian(credential.nationality);
+    const region_check = matches_region(credential.region, service.requiredRegion);
+    return credential_valid && issuer_valid && meets_age && 
+           nationality_check && region_check;
 }
 
-// The main public function that verifies service eligibility
-// and records the result on the ledger
+// The main public function that verifies and records service eligibility
 export circuit verify_and_record_eligibility(
     credential: EthiopianIdentityCredential,
     service: ServiceRequirement,
-    current_date_days: Field,
-    current_time: Field
+    currentDateInDays: Field,
+    currentTime: Field
 ): [] {
-    // Run the verification
     const is_eligible = verify_service_eligibility(
         credential,
         service,
-        current_date_days,
-        current_time
+        currentDateInDays,
+        currentTime
     );
-    
-    // Create a unique key combining the user and service IDs
     const eligibility_key = credential.subject + service.id;
-    
-    // Record the result in the ledger
     service_eligibility.insert(disclose(eligibility_key), disclose(is_eligible));
 }
 
-// Witness functions that will be implemented at runtime
+// Witness functions for testing
 witness create_test_identity_credential(): EthiopianIdentityCredential;
 witness create_test_service(): ServiceRequirement;
 
-// Test circuit for service eligibility verification
+// Test circuit for service eligibility
 export circuit test_service_eligibility(): [] {
-    // Get test data
     const test_credential = create_test_identity_credential();
     const test_service = create_test_service();
-    
-    // Current time for testing (Unix timestamp)
     const current_time = 1677609600; // March 1, 2023
+    const current_date_days = 19420; // Approx. March 1, 2023 in days since epoch
     
-    // Current date in days since Unix epoch
-    const current_date_days = current_time / 86400; // Seconds in a day
-    
-    // Verify and record eligibility
     verify_and_record_eligibility(
         test_credential,
         test_service,
@@ -182,7 +133,6 @@ export circuit test_service_eligibility(): [] {
         current_time
     );
     
-    // Check the result in the ledger
     const eligibility_key = test_credential.subject + test_service.id;
     const is_eligible = service_eligibility.lookup(eligibility_key);
 } 

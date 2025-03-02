@@ -1,21 +1,24 @@
 # Ethiopian Identity Wallet
 
-A decentralized identity wallet application for Ethiopian citizens that leverages privacy-preserving smart contracts to verify nationality, age, and service eligibility without exposing sensitive personal data.
+A decentralized identity wallet application for Ethiopian citizens that leverages privacy-preserving smart contracts to verify nationality and creates Soul Bound Tokens as proof of verification.
 
 ## Features
 
-- **Privacy-Preserving Verification**: Verify Ethiopian nationality, age, and service eligibility without revealing actual personal information.
-- **Smart Contract Integration**: Uses Compact language smart contracts for secure, on-chain verification.
-- **Credential Management**: Create and manage verifiable credentials for Ethiopian identity.
-- **Zero-Knowledge Proofs**: Generate and verify proofs using the Midnight proof system.
+- **Privacy-Preserving Nationality Verification**: Verify Ethiopian nationality without revealing sensitive personal data
+- **Soul Bound Token Creation**: Generate non-transferable tokens that prove nationality verification
+- **Smart Contract Integration**: Uses Compact language smart contract for secure, on-chain verification
+- **Credential Management**: Create and manage verifiable credentials for Ethiopian identity
+- **Zero-Knowledge Proofs**: Generate and verify proofs using the Midnight proof system
 
-## Smart Contracts
+## Smart Contract
 
-The project includes three Compact smart contracts:
+The project uses a single Compact smart contract:
 
-1. **Ethiopian Nationality Verification**: Verifies a user's Ethiopian citizenship without revealing their personal information.
-2. **Age Verification**: Verifies a user's age without revealing their date of birth.
-3. **Service Eligibility**: Combines nationality and age verification to determine eligibility for various Ethiopian services.
+**Ethiopian Nationality Verification**: Verifies a user's Ethiopian citizenship without revealing their personal information. The contract includes:
+- A ledger for storing nationality verification statuses
+- A structure for Ethiopian nationality credentials
+- Functions to verify the validity of credentials and authorization of issuers
+- A main function to verify and record nationality status
 
 ## Prerequisites
 
@@ -42,75 +45,68 @@ The project includes three Compact smart contracts:
 
 ## Quick Start
 
-The easiest way to run the application is using the provided run script:
+The easiest way to run the application is using npm:
 
 ```bash
-./run.sh
+npm run dev
 ```
 
-This script will:
-1. Check if Compactc is installed
-2. Compile all Compact contracts
-3. Start the Next.js development server
-
-Alternatively, if you're in the root directory of the monorepo, you can use:
-
-```bash
-# From the midnight-examples root directory
-npm run identity-wallet
-```
-
-Once started, the application will be available at http://localhost:3000 (or another port if 3000 is already in use).
-
-## Manual Setup
-
-If you prefer to set up manually, follow these steps:
-
-1. Compile the Compact contracts:
-   ```bash
-   npx ts-node scripts/compile-contracts.ts
-   ```
-
-2. Start the development server:
-   ```bash
-   npm run dev
-   ```
+This will start the Next.js development server, and the application will be available at http://localhost:3000.
 
 ## Using the Application
 
-1. **Create or Import Credentials**:
+1. **Connect Your Wallet**:
+   - Click the "Connect Wallet" button in the Proof Generator
+   - The application uses a mock Lace wallet implementation for demonstration
+
+2. **View Available Credentials**:
    - Navigate to the Credential Manager
-   - Create a new Ethiopian Identity credential
-   - Fill in the required information
+   - View the mock Ethiopian Identity credentials
+   - Each credential includes nationality verification details
 
-2. **Generate Proofs**:
+3. **Generate Proofs and Create Soul Bound Tokens**:
    - Navigate to the Proof Generator
-   - Select a contract and function
-   - Choose a credential
-   - Generate a proof
-
-3. **Verify Proofs**:
-   - Submit the generated proof for verification
-   - View the verification result
+   - Select an Ethiopian nationality credential
+   - Generate a zero-knowledge proof
+   - Create a Soul Bound Token containing:
+     - Issuer's public key
+     - Issuer's DID
+     - Subject's DID
+     - Verification result
+     - Proof protocol details
 
 ## Development
 
 ### Directory Structure
 
 - `/app`: Next.js application code
-- `/contracts`: Compact language smart contracts
-- `/app/compiled-contracts`: Compiled contract output (generated during build)
-- `/app/components`: React components
-- `/app/services`: Service classes for API interactions
-- `/app/types`: TypeScript type definitions
+  - `/components`: React components including ProofGenerator and CredentialManager
+  - `/services`: Service classes for API interactions
+    - `MidnightAPI.ts`: Handles proof generation and verification
+    - `LaceWalletService.ts`: Mock wallet implementation
+    - `VerifiableCredentialService.ts`: Manages credentials
+  - `/types`: TypeScript type definitions
+  - `/compiled-contracts`: Compiled contract output
+- `/contracts`: Compact language smart contract
 
-### Smart Contract Development
+### Mock Implementations
 
-To add or modify Compact contracts:
+The application includes several mock implementations for demonstration:
 
-1. Edit or create a new contract in the `/contracts` directory
-2. Compile the contract using the compile-contracts script
-3. Update the MidnightAPI service to include the new contract
+1. **Lace Wallet Integration**: 
+   - Simulates wallet connection and token creation
+   - Returns mock transaction hashes
+   - Handles Soul Bound Token metadata
+
+2. **Proof Generation**:
+   - Simulates zero-knowledge proof creation
+   - Uses mock credential data
+   - Demonstrates the proof verification flow
+
+3. **Credentials**:
+   - Provides mock Ethiopian nationality credentials
+   - Includes sample issuer and subject DIDs
+   - Demonstrates the credential format
 
 ## License
 

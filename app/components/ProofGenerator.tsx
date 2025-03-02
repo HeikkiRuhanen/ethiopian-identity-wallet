@@ -20,7 +20,7 @@ import {
 } from '@mui/material';
 import { MidnightAPI, ProofData, ProofResult } from '../services/MidnightAPI';
 import { VerifiableCredentialService } from '../services/VerifiableCredentialService';
-import { EthiopianNationalityCredential } from '../types/VerifiableCredential';
+import { EthiopianNationalityCredential, Issuer } from '../types/VerifiableCredential';
 import { LaceWalletService } from '../services/LaceWalletService';
 
 export default function ProofGenerator() {
@@ -30,8 +30,7 @@ export default function ProofGenerator() {
   const [selectedCredential, setSelectedCredential] = useState<string>('');
   const [contractName, setContractName] = useState('ethiopian_nationality_verification');
   const [functionName, setFunctionName] = useState('verify_and_record_nationality');
-  const [ageThreshold, setAgeThreshold] = useState<number>(18);
-  const [contractAddress, setContractAddress] = useState('addr1q8w3e5r7t9y0u2i1o3p4a6s7d8f9g0h');
+  const [tokenId, setTokenId] = useState('sbt_ethiopian_nationality_001');
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [walletConnected, setWalletConnected] = useState(false);
@@ -73,35 +72,16 @@ export default function ProofGenerator() {
   };
 
   const handleContractNameChange = (event: SelectChangeEvent) => {
-    const selectedContract = event.target.value;
-    setContractName(selectedContract);
-    
-    // Set a default function based on the selected contract
-    switch (selectedContract) {
-      case 'ethiopian_nationality_verification':
-        setFunctionName('verify_and_record_nationality');
-        break;
-      case 'age_verification':
-        setFunctionName('verify_and_record_age');
-        break;
-      case 'ethiopia_service_eligibility':
-        setFunctionName('verify_and_record_eligibility');
-        break;
-      default:
-        setFunctionName('');
-    }
+    setContractName('ethiopian_nationality_verification');
+    setFunctionName('verify_and_record_nationality');
   };
 
   const handleFunctionNameChange = (event: SelectChangeEvent) => {
-    setFunctionName(event.target.value);
+    setFunctionName('verify_and_record_nationality');
   };
 
-  const handleAgeThresholdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setAgeThreshold(parseInt(event.target.value) || 18);
-  };
-
-  const handleContractAddressChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setContractAddress(event.target.value);
+  const handleTokenIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTokenId(event.target.value);
   };
 
   const resetState = () => {
@@ -129,98 +109,45 @@ export default function ProofGenerator() {
 
   const generateProof = async () => {
     setLoading(true);
-    resetState();
+    setResult(null);
+    setError(null);
+
     try {
       const credential = credentials.find(c => c.id === selectedCredential);
+      
       if (!credential) {
         throw new Error('No credential selected');
       }
 
-      // Prepare inputs based on the selected contract and function
-      let inputs: any = {};
-      
-      if (contractName === 'ethiopian_nationality_verification') {
-        // Create an Ethiopian nationality credential from the selected credential
-        inputs = {
-          credential: {
-            id: credential.id,
-            issuer: '0x7382619ab34c51def9012ae5b7290abd8f1c47e2d45637d39f28c5a', // Authorized issuer from the contract
-            issuedAt: Math.floor(new Date(credential.validFrom).getTime() / 1000),
-            expiresAt: Math.floor(new Date(credential.validUntil || credential.validFrom).getTime() / 1000),
-            subject: credential.credentialSubject.id,
-            nationality: credential.credentialSubject.nationality,
-            signature: ['0x123456789abcdef', '0x987654321fedcba'] // Mock signature
-          },
-          currentTime: Math.floor(Date.now() / 1000)
-        };
-      } 
-      else if (contractName === 'age_verification') {
-        // Extract birth date and convert to days since epoch
-        // We know birthDate exists in EthiopianNationalityCredential as per the interface
-        const birthDate = new Date(credential.credentialSubject.birthDate);
-        const birthDateInDays = Math.floor(birthDate.getTime() / (1000 * 86400));
-        const currentDateInDays = Math.floor(Date.now() / (1000 * 86400));
-        
-        inputs = {
-          credential: {
-            id: credential.id,
-            issuer: '0x7382619ab34c51def9012ae5b7290abd8f1c47e2d45637d39f28c5a',
-            issuedAt: Math.floor(new Date(credential.validFrom).getTime() / 1000),
-            expiresAt: Math.floor(new Date(credential.validUntil || credential.validFrom).getTime() / 1000),
-            subject: credential.credentialSubject.id,
-            birthDateInDays: birthDateInDays,
-            nationality: credential.credentialSubject.nationality,
-            signature: ['0x123456789abcdef', '0x987654321fedcba']
-          },
-          currentDateDays: currentDateInDays,
-          currentTime: Math.floor(Date.now() / 1000),
-          ageThreshold: ageThreshold
-        };
-      }
-      else if (contractName === 'ethiopia_service_eligibility') {
-        // Extract birth date and create a full identity credential
-        const birthDate = new Date(credential.credentialSubject.birthDate);
-        const birthDateInDays = Math.floor(birthDate.getTime() / (1000 * 86400));
-        const currentDateInDays = Math.floor(Date.now() / (1000 * 86400));
-        
-        inputs = {
-          credential: {
-            id: credential.id,
-            issuer: '0x7382619ab34c51def9012ae5b7290abd8f1c47e2d45637d39f28c5a',
-            issuedAt: Math.floor(new Date(credential.validFrom).getTime() / 1000),
-            expiresAt: Math.floor(new Date(credential.validUntil || credential.validFrom).getTime() / 1000),
-            subject: credential.credentialSubject.id,
-            fullName: credential.credentialSubject.fullName,
-            birthDateInDays: birthDateInDays,
-            nationality: credential.credentialSubject.nationality,
-            region: credential.credentialSubject.region,
-            kebele: credential.credentialSubject.kebele,
-            nationalIdNumber: credential.credentialSubject.nationalIdNumber,
-            signature: ['0x123456789abcdef', '0x987654321fedcba']
-          },
-          service: {
-            id: '1',
-            minimumAge: ageThreshold,
-            requiresEthiopianNationality: true,
-            requiredRegion: '0' // Any region
-          },
-          currentDateDays: currentDateInDays,
-          currentTime: Math.floor(Date.now() / 1000)
-        };
-      }
-      
-      // Generate the proof using the MidnightAPI
-      const proofResult = await MidnightAPI.generateProof(
+      // Get expiration timestamp, using the validFrom date as fallback if validUntil is not defined
+      const expirationTimestamp = credential.validUntil 
+        ? new Date(credential.validUntil).getTime() / 1000
+        : new Date(credential.validFrom).getTime() / 1000 + (365 * 24 * 60 * 60); // Default to 1 year from validFrom
+
+      // Only prepare inputs for the Ethiopian nationality verification contract
+      const inputs = {
+        credential: {
+          subjectId: credential.credentialSubject.id,
+          nationality: credential.credentialSubject.nationality,
+          expiresAt: expirationTimestamp,
+          // Mock signature for demonstration
+          issuerSignature: "0x1234567890"
+        }
+      };
+
+      const result = await MidnightAPI.generateProof(
         contractName,
         functionName,
         inputs
       );
 
-      setResult(proofResult);
-      if (!proofResult.success) {
-        setError(proofResult.error || 'Unknown error generating proof');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to generate proof');
       }
+
+      setResult(result);
     } catch (err) {
+      console.error('Error generating proof:', err);
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
@@ -252,7 +179,7 @@ export default function ProofGenerator() {
     }
   };
 
-  const submitProofToContract = async () => {
+  const createSoulBoundToken = async () => {
     setLoading(true);
     resetState();
     try {
@@ -264,14 +191,34 @@ export default function ProofGenerator() {
         throw new Error('Wallet not connected. Please connect your wallet first.');
       }
 
-      const submission = await LaceWalletService.submitProofToContract(
-        contractAddress,
-        result.proof
+      // Get the selected credential to extract metadata
+      const credential = credentials.find(c => c.id === selectedCredential);
+      
+      if (!credential) {
+        throw new Error('Credential data not found');
+      }
+      
+      // In our mock data, we know the credential structure
+      // Using any to bypass TypeScript limitations with the current interface
+      const credentialAny = credential as any;
+      
+      const credentialData = {
+        id: credential.id,
+        issuerPublicKey: `${credentialAny.issuer.id}#key1`,
+        issuerDID: credentialAny.issuer.id,
+        subjectDID: credential.credentialSubject.id,
+        type: credential.type.find(t => t !== 'VerifiableCredential') || "EthiopianNationalityCredential"
+      };
+
+      const submission = await LaceWalletService.createSoulBoundToken(
+        tokenId,
+        result.proof,
+        credentialData
       );
 
       setResult(submission);
       if (!submission.success) {
-        setError(submission.error || 'Unknown error submitting proof');
+        setError(submission.error || 'Unknown error creating Soul Bound Token');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -381,11 +328,13 @@ export default function ProofGenerator() {
                   value={contractName}
                   onChange={handleContractNameChange}
                   label="Contract"
+                  disabled={true}
                 >
                   <MenuItem value="ethiopian_nationality_verification">Ethiopian Nationality Verification</MenuItem>
-                  <MenuItem value="age_verification">Age Verification</MenuItem>
-                  <MenuItem value="ethiopia_service_eligibility">Service Eligibility</MenuItem>
                 </Select>
+                <Typography variant="caption" color="textSecondary" sx={{ mt: 1 }}>
+                  Only Ethiopian Nationality Verification is currently available
+                </Typography>
               </FormControl>
             </Grid>
             
@@ -396,40 +345,12 @@ export default function ProofGenerator() {
                   value={functionName}
                   onChange={handleFunctionNameChange}
                   label="Function"
-                  disabled={!contractName}
+                  disabled={true}
                 >
-                  {contractName === 'ethiopian_nationality_verification' && (
-                    <MenuItem value="verify_and_record_nationality">Verify and Record Nationality</MenuItem>
-                  )}
-                  {contractName === 'age_verification' && (
-                    <>
-                      <MenuItem value="verify_and_record_age">Verify and Record Age</MenuItem>
-                      <MenuItem value="create_age_verification_proof">Create Age Verification Proof</MenuItem>
-                    </>
-                  )}
-                  {contractName === 'ethiopia_service_eligibility' && (
-                    <>
-                      <MenuItem value="verify_and_record_eligibility">Verify and Record Eligibility</MenuItem>
-                      <MenuItem value="verify_service_eligibility">Verify Service Eligibility</MenuItem>
-                    </>
-                  )}
+                  <MenuItem value="verify_and_record_nationality">Verify and Record Nationality</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
-            
-            {(contractName === 'age_verification' || contractName === 'ethiopia_service_eligibility') && (
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Age Threshold"
-                  type="number"
-                  value={ageThreshold}
-                  onChange={handleAgeThresholdChange}
-                  InputProps={{ inputProps: { min: 0, max: 120 } }}
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-            )}
           </Grid>
         </CardContent>
       </Card>
@@ -463,10 +384,10 @@ export default function ProofGenerator() {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Cardano Contract Address"
-                value={contractAddress}
-                onChange={handleContractAddressChange}
-                helperText="The Cardano smart contract address where the proof will be submitted"
+                label="Soul Bound Token ID"
+                value={tokenId}
+                onChange={handleTokenIdChange}
+                helperText="The unique identifier for the Soul Bound Token to be created"
               />
             </Grid>
           </Grid>
@@ -492,10 +413,10 @@ export default function ProofGenerator() {
             <Button 
               variant="contained" 
               color="secondary"
-              onClick={submitProofToContract}
+              onClick={createSoulBoundToken}
               disabled={!result || !result.proof || !walletConnected || loading}
             >
-              Submit to Contract
+              Create Soul Bound Token
             </Button>
           </Box>
         </CardContent>

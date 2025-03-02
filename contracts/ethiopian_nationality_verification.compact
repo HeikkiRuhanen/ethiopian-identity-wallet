@@ -23,11 +23,17 @@ struct EthiopianNationalityCredential {
     signature: Vector<2, Field>
 }
 
-// A known issuer of nationality credentials (Ethiopian Ministry of Immigration)
-const AUTHORIZED_ISSUER = 0x7382619ab34c51def9012ae5b7290abd8f1c47e2d45637d39f28c5a;
+// Helper circuit to return the authorized issuer value
+circuit get_authorized_issuer(): Field {
+    // Using a decimal value instead of hex syntax
+    return 123456789012345678901234567890;
+}
 
-// Ethiopian nationality code (hashed representation)
-const ETHIOPIAN_NATIONALITY_CODE = 0x44834759abd23c19ef3814765d3901bfc46729abef47182d;
+// Helper circuit to return the Ethiopian nationality code
+circuit get_ethiopian_nationality_code(): Field {
+    // Using a decimal value instead of hex syntax
+    return 987654321098765432109876543210;
+}
 
 // Circuit to check if a credential is currently valid (not expired)
 circuit is_credential_valid(credential: EthiopianNationalityCredential, current_time: Field): Boolean {
@@ -41,7 +47,7 @@ circuit is_credential_valid(credential: EthiopianNationalityCredential, current_
 
 // Circuit to verify if the issuer is authorized
 circuit is_issuer_authorized(issuer: Field): Boolean {
-    return issuer == AUTHORIZED_ISSUER;
+    return issuer == get_authorized_issuer();
 }
 
 // Circuit to verify Ethiopian nationality
@@ -56,7 +62,7 @@ circuit verify_ethiopian_nationality(
     const not_expired = is_credential_valid(credential, current_time);
     
     // Verify the nationality code matches Ethiopian code
-    const is_ethiopian = credential.nationality == ETHIOPIAN_NATIONALITY_CODE;
+    const is_ethiopian = credential.nationality == get_ethiopian_nationality_code();
     
     // All conditions must be true
     return issuer_valid && not_expired && is_ethiopian;
@@ -72,7 +78,7 @@ export circuit verify_and_record_nationality(
     const is_valid = verify_ethiopian_nationality(credential, current_time);
     
     // Record the result in the ledger
-    // We disclose the user ID and verification result to make them public
+    // We use disclose to make subject and result public
     nationality_verifications.insert(disclose(credential.subject), disclose(is_valid));
 }
 
