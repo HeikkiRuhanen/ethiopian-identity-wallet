@@ -25,7 +25,7 @@ export interface VerifiableCredential {
   '@context': string[];
   id: string;
   type: string[];
-  issuer: string;
+  issuer: string | Issuer;
   issuanceDate: string;
   validFrom: string;
   validUntil?: string;
@@ -39,6 +39,8 @@ export interface VerifiableCredential {
     proofPurpose: string;
     verificationMethod: string;
     jws?: string;
+    cryptosuite?: string;
+    proofValue?: string;
   };
 }
 

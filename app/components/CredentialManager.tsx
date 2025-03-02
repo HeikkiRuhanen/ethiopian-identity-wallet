@@ -151,7 +151,9 @@ export default function CredentialManager() {
                   <Typography color="text.secondary" gutterBottom>
                     Issued by: {typeof credential.issuer === 'string' 
                       ? credential.issuer 
-                      : credential.issuer.name || credential.issuer.id}
+                      : credential.issuer && 'id' in credential.issuer
+                        ? credential.issuer.name || credential.issuer.id
+                        : 'Unknown issuer'}
                   </Typography>
                   
                   <Typography variant="body2" sx={{ mb: 1.5 }}>

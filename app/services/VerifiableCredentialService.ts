@@ -21,6 +21,7 @@ const MOCK_ETHIOPIAN_CREDENTIALS: EthiopianNationalityCredential[] = [
       'id': 'did:example:ethiopia-ministry-of-immigration',
       'name': 'Ethiopian Ministry of Immigration'
     },
+    'issuanceDate': '2023-01-10T12:30:00Z',
     'validFrom': '2023-01-10T12:30:00Z',
     'validUntil': '2033-01-10T12:30:00Z',
     'credentialSubject': {
@@ -92,8 +93,9 @@ export class VerifiableCredentialService {
         'id': 'did:example:ethiopia-ministry-of-immigration',
         'name': 'Ethiopian Ministry of Immigration'
       },
-      'validFrom': now.toISOString(),
-      'validUntil': tenYearsLater.toISOString(),
+      'issuanceDate': '2023-06-15T10:45:00Z',
+      'validFrom': '2023-06-15T10:45:00Z',
+      'validUntil': '2033-06-15T10:45:00Z',
       'credentialSubject': {
         'id': subjectId,
         'nationality': 'Ethiopian',

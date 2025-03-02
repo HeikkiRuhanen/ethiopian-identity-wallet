@@ -198,14 +198,15 @@ export default function ProofGenerator() {
         throw new Error('Credential data not found');
       }
       
-      // In our mock data, we know the credential structure
-      // Using any to bypass TypeScript limitations with the current interface
-      const credentialAny = credential as any;
+      // Extract issuer information safely
+      const issuerInfo = typeof credential.issuer === 'string'
+        ? { id: credential.issuer }
+        : credential.issuer;
       
       const credentialData = {
         id: credential.id,
-        issuerPublicKey: `${credentialAny.issuer.id}#key1`,
-        issuerDID: credentialAny.issuer.id,
+        issuerPublicKey: `${issuerInfo.id}#key1`,
+        issuerDID: issuerInfo.id,
         subjectDID: credential.credentialSubject.id,
         type: credential.type.find(t => t !== 'VerifiableCredential') || "EthiopianNationalityCredential"
       };
