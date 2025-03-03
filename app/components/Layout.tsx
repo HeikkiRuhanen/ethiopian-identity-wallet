@@ -25,6 +25,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import SecurityIcon from '@mui/icons-material/Security';
 import InfoIcon from '@mui/icons-material/Info';
+import BugReportIcon from '@mui/icons-material/BugReport';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import { LaceWalletService } from '../services/LaceWalletService';
 
@@ -41,6 +42,7 @@ const pages: Page[] = [
   { id: 'credentials', title: 'My Credentials', icon: <VerifiedUserIcon /> },
   { id: 'proof', title: 'Generate Proof', icon: <SecurityIcon /> },
   { id: 'info', title: 'About', icon: <InfoIcon /> },
+  { id: 'wallet-debug', title: 'Wallet Debug', icon: <BugReportIcon /> },
 ];
 
 interface LayoutProps {

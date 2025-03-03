@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Midnight Wallet Namespace Check</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 5px;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+    button {
+      background: #4a6ee0;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px 0;
+    }
+    .not-found {
+      color: red;
+      font-weight: bold;
+    }
+    .found {
+      color: green;
+      font-weight: bold;
+    }
+    #details {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Midnight Wallet Namespace Check</h1>
+  <p>This tool checks all global window objects to find potential wallet connections.</p>
+  
+  <div>
+    <h2>Check Results</h2>
+    <div id="results">Checking...</div>
+    <button id="check-again">Check Again</button>
+  </div>
+  
+  <div id="details">
+    <h2>Known Wallet Integration Methods</h2>
+    <pre>
+Common integration patterns:
+- window.midnightLace (standard for Midnight Lace wallet)
+- window.midnight
+- window.cardano
+- window.wallet
+- window.lace
+- window.ethereum (for EVM compatibility)
+    </pre>
+  </div>
+
+  <div>
+    <h2>All Global Objects</h2>
+    <pre id="all-props"></pre>
+  </div>
+
+  <script>
+    function findWalletNamespaces() {
+      const resultsDiv = document.getElementById('results');
+      const allPropsDiv = document.getElementById('all-props');
+      
+      // First check known wallet patterns
+      const knownPatterns = [
+        'window.midnightLace',
+        'window.midnight', 
+        'window.cardano',
+        'window.wallet',
+        'window.lace',
+        'window.ethereum'
+      ];
+      
+      let found = false;
+      let resultsHTML = '<ul>';
+      
+      // Check each known pattern
+      knownPatterns.forEach(pattern => {
+        const path = pattern.split('.');
+        let obj = window;
+        let exists = true;
+        
+        // Navigate the path (window.x.y.z)
+        for (let i = 1; i < path.length; i++) {
+          if (obj && obj[path[i]] !== undefined) {
+            obj = obj[path[i]];
+          } else {
+            exists = false;
+            break;
+          }
+        }
+        
+        if (exists) {
+          found = true;
+          const methods = typeof obj === 'object' ? 
+            Object.getOwnPropertyNames(obj)
+              .filter(m => typeof obj[m] === 'function')
+              .join(', ') : 
+            'Not an object';
+          
+          resultsHTML += `<li class="found">✅ <strong>${pattern}</strong> exists`;
+          if (methods !== 'Not an object') {
+            resultsHTML += ` (Methods: ${methods})`;
+          }
+          resultsHTML += '</li>';
+        } else {
+          resultsHTML += `<li class="not-found">❌ <strong>${pattern}</strong> not found</li>`;
+        }
+      });
+      
+      resultsHTML += '</ul>';
+      
+      if (!found) {
+        resultsHTML += '<p class="not-found">No known wallet integrations found. Searching for potential matches...</p>';
+        
+        // Search for any properties that might be related to wallets
+        const walletKeywords = ['lace', 'midnight', 'wallet', 'cardano', 'crypto', 'block'];
+        const allProps = Object.getOwnPropertyNames(window);
+        const potentialWallets = allProps.filter(prop => {
+          const propLower = prop.toLowerCase();
+          return walletKeywords.some(keyword => propLower.includes(keyword));
+        });
+        
+        if (potentialWallets.length > 0) {
+          resultsHTML += '<p>Potential wallet-related properties:</p><ul>';
+          potentialWallets.forEach(prop => {
+            const type = typeof window[prop];
+            resultsHTML += `<li><strong>${prop}</strong> (${type})</li>`;
+          });
+          resultsHTML += '</ul>';
+        } else {
+          resultsHTML += '<p>No potential wallet-related properties found.</p>';
+        }
+      }
+      
+      // Display all global properties for investigation
+      const allProps = Object.getOwnPropertyNames(window).sort();
+      allPropsDiv.textContent = allProps.join('\n');
+      
+      resultsDiv.innerHTML = resultsHTML;
+    }
+    
+    // Run checks on page load
+    document.addEventListener('DOMContentLoaded', findWalletNamespaces);
+    
+    // Add button event listener
+    document.getElementById('check-again').addEventListener('click', findWalletNamespaces);
+  </script>
+</body>
+</html> 

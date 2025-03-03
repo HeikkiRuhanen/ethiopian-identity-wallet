@@ -20,6 +20,7 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import SecurityIcon from '@mui/icons-material/Security';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import InfoIcon from '@mui/icons-material/Info';
+import WalletStatus from './WalletStatus';
 
 interface HomeProps {
   onNavigate: (page: string) => void;
@@ -60,6 +61,8 @@ export default function Home({ onNavigate }: HomeProps) {
           Generate Proof
         </Button>
       </Box>
+
+      <WalletStatus />
 
       <Typography variant="h4" component="h2" gutterBottom>
         How It Works

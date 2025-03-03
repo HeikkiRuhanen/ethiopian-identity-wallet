@@ -7,8 +7,9 @@ A decentralized identity wallet application for Ethiopian citizens that leverage
 - **Privacy-Preserving Nationality Verification**: Verify Ethiopian nationality without revealing sensitive personal data
 - **Soul Bound Token Creation**: Generate non-transferable tokens that prove nationality verification
 - **Smart Contract Integration**: Uses Compact language smart contract for secure, on-chain verification
-- **Credential Management**: Create and manage verifiable credentials for Ethiopian identity
+- **Credential Management**: View and manage verifiable credentials for Ethiopian identity
 - **Zero-Knowledge Proofs**: Generate and verify proofs using the Midnight proof system
+- **Enhanced Wallet Integration**: Robust connection with Midnight Lace wallet with fallback mechanisms
 
 ## Smart Contract
 
@@ -25,6 +26,8 @@ The project uses a single Compact smart contract:
 - Node.js 16+
 - npm 8+
 - Compactc 0.21.0+ (Compact language compiler)
+- Docker (for running Midnight infrastructure)
+- Midnight Lace Wallet extension (v1.2.5+)
 
 ## Installation
 
@@ -43,6 +46,37 @@ The project uses a single Compact smart contract:
    npm install
    ```
 
+4. Set up environment variables in `.env.local`:
+   ```
+   NEXT_PUBLIC_PROOF_SERVER_URL=http://localhost:<port>
+   NEXT_PUBLIC_INDEXER_URL=http://localhost:<port>
+   NEXT_PUBLIC_NODE_URL=http://localhost:<port>
+   NEXT_PUBLIC_NETWORK_ID=undeployed
+   NEXT_PUBLIC_LACE_ENABLED=true
+   NEXT_PUBLIC_USE_REAL_PROOFS=true
+   ```
+
+## Running Midnight Infrastructure
+
+The application requires the Midnight blockchain infrastructure:
+
+1. Start the Docker containers:
+   ```bash
+   docker-compose up -d
+   ```
+
+2. Verify the containers are running:
+   ```bash
+   ./scripts/check-docker.sh
+   ```
+
+3. Update `.env.local` with the correct ports from Docker:
+   ```bash
+   docker port counter-proof-server  # For NEXT_PUBLIC_PROOF_SERVER_URL
+   docker port counter-indexer       # For NEXT_PUBLIC_INDEXER_URL
+   docker port counter-node          # For NEXT_PUBLIC_NODE_URL
+   ```
+
 ## Quick Start
 
 The easiest way to run the application is using npm:
@@ -55,16 +89,24 @@ This will start the Next.js development server, and the application will be avai
 
 ## Using the Application
 
-1. **Connect Your Wallet**:
-   - Click the "Connect Wallet" button in the Proof Generator
-   - The application uses a mock Lace wallet implementation for demonstration
+1. **Install the Midnight Lace Wallet**:
+   - Download the Midnight Lace wallet extension (v1.2.5 or later)
+   - Unzip and load it as an unpacked extension in Chrome
+   - Enable Developer mode in Chrome extensions
+   - Configure the wallet to use the same endpoints as in `.env.local`
 
-2. **View Available Credentials**:
+2. **Connect Your Wallet**:
+   - Click the "Connect Wallet" button in the application
+   - Approve the connection request in the wallet extension
+   - The wallet addresses will be displayed if connected successfully
+   - If the wallet is unavailable, mock addresses will be shown
+
+3. **View Available Credentials**:
    - Navigate to the Credential Manager
    - View the mock Ethiopian Identity credentials
    - Each credential includes nationality verification details
 
-3. **Generate Proofs and Create Soul Bound Tokens**:
+4. **Generate Proofs and Create Soul Bound Tokens**:
    - Navigate to the Proof Generator
    - Select an Ethiopian nationality credential
    - Generate a zero-knowledge proof
@@ -75,6 +117,24 @@ This will start the Next.js development server, and the application will be avai
      - Verification result
      - Proof protocol details
 
+## Troubleshooting Wallet Connection
+
+If you encounter issues connecting to the wallet:
+
+1. **Check Wallet Extension**:
+   - Ensure the Midnight Lace wallet is properly installed
+   - Verify the extension is enabled in Chrome
+   - Check the wallet is configured for the correct network
+
+2. **Check Docker Services**:
+   - Verify all Docker containers are running
+   - Make sure ports are correctly configured in `.env.local`
+
+3. **Use the Diagnostic Tools**:
+   - The WalletDebug component shows detailed wallet state
+   - The wallet-test.html page provides browser-level diagnostics
+   - Check browser console for any error messages
+
 ## Development
 
 ### Directory Structure
@@ -83,30 +143,30 @@ This will start the Next.js development server, and the application will be avai
   - `/components`: React components including ProofGenerator and CredentialManager
   - `/services`: Service classes for API interactions
     - `MidnightAPI.ts`: Handles proof generation and verification
-    - `LaceWalletService.ts`: Mock wallet implementation
+    - `LaceWalletService.ts`: Wallet integration service
     - `VerifiableCredentialService.ts`: Manages credentials
   - `/types`: TypeScript type definitions
   - `/compiled-contracts`: Compiled contract output
 - `/contracts`: Compact language smart contract
+- `/scripts`: Helper scripts for development and testing
+- `/public`: Static assets and diagnostic tools
 
-### Mock Implementations
+### Recent Improvements
 
-The application includes several mock implementations for demonstration:
+1. **Enhanced Wallet Integration**:
+   - Robust connection handling with timeout and retry logic
+   - Fallback to mock addresses when wallet is unavailable
+   - Improved error handling and user feedback
 
-1. **Lace Wallet Integration**: 
-   - Simulates wallet connection and token creation
-   - Returns mock transaction hashes
-   - Handles Soul Bound Token metadata
+2. **Diagnostic Tools**:
+   - Added WalletDebug component for real-time wallet state
+   - Created diagnostic HTML pages for extension testing
+   - Added Docker container status checking scripts
 
-2. **Proof Generation**:
-   - Simulates zero-knowledge proof creation
-   - Uses mock credential data
-   - Demonstrates the proof verification flow
-
-3. **Credentials**:
-   - Provides mock Ethiopian nationality credentials
-   - Includes sample issuer and subject DIDs
-   - Demonstrates the credential format
+3. **UI Enhancements**:
+   - Simplified credential management interface
+   - Better feedback for wallet connection status
+   - Clear indication of mock vs. real data usage
 
 ## License
 

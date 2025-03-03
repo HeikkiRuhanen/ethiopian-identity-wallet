@@ -11,7 +11,6 @@ import {
   DialogTitle, 
   DialogContent, 
   DialogActions,
-  TextField,
   Grid,
   Divider,
   List,
@@ -19,27 +18,15 @@ import {
   ListItemText,
   CircularProgress
 } from '@mui/material';
-import { VerifiableCredential, EthiopianNationalityCredential } from '../types/VerifiableCredential';
+import { VerifiableCredential } from '../types/VerifiableCredential';
 import { VerifiableCredentialService } from '../services/VerifiableCredentialService';
 
 export default function CredentialManager() {
   const [credentials, setCredentials] = useState<VerifiableCredential[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openIssueDialog, setOpenIssueDialog] = useState(false);
   const [openViewDialog, setOpenViewDialog] = useState(false);
   const [selectedCredential, setSelectedCredential] = useState<VerifiableCredential | null>(null);
   
-  // Form state for issuing a new credential
-  const [formState, setFormState] = useState({
-    subjectId: 'did:example:' + Math.random().toString(36).substring(2, 15),
-    fullName: '',
-    birthDate: '',
-    birthPlace: '',
-    nationalIdNumber: '',
-    region: '',
-    kebele: ''
-  });
-
   useEffect(() => {
     // Load credentials when component mounts
     loadCredentials();
@@ -57,14 +44,6 @@ export default function CredentialManager() {
     }
   };
 
-  const handleIssueOpen = () => {
-    setOpenIssueDialog(true);
-  };
-
-  const handleIssueClose = () => {
-    setOpenIssueDialog(false);
-  };
-
   const handleViewOpen = (credential: VerifiableCredential) => {
     setSelectedCredential(credential);
     setOpenViewDialog(true);
@@ -75,58 +54,11 @@ export default function CredentialManager() {
     setSelectedCredential(null);
   };
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormState(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleIssueCredential = () => {
-    try {
-      const newCredential = VerifiableCredentialService.createEthiopianNationalityCredential(
-        formState.subjectId,
-        formState.fullName,
-        formState.birthDate,
-        formState.birthPlace,
-        formState.nationalIdNumber,
-        formState.region,
-        formState.kebele
-      );
-      
-      setCredentials(prev => [...prev, newCredential]);
-      handleIssueClose();
-      
-      // Reset form
-      setFormState({
-        subjectId: 'did:example:' + Math.random().toString(36).substring(2, 15),
-        fullName: '',
-        birthDate: '',
-        birthPlace: '',
-        nationalIdNumber: '',
-        region: '',
-        kebele: ''
-      });
-    } catch (error) {
-      console.error('Error issuing credential:', error);
-    }
-  };
-
   return (
     <Box sx={{ my: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
         Ethiopian Nationality Credentials
       </Typography>
-      
-      <Button 
-        variant="contained" 
-        color="primary" 
-        onClick={handleIssueOpen}
-        sx={{ mb: 3 }}
-      >
-        Issue New Credential
-      </Button>
       
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
@@ -134,7 +66,7 @@ export default function CredentialManager() {
         </Box>
       ) : credentials.length === 0 ? (
         <Typography variant="body1" color="text.secondary" sx={{ my: 4 }}>
-          No credentials found. Click "Issue New Credential" to create one.
+          No credentials found.
         </Typography>
       ) : (
         <Grid container spacing={3}>
@@ -179,99 +111,6 @@ export default function CredentialManager() {
           ))}
         </Grid>
       )}
-      
-      {/* Issue Credential Dialog */}
-      <Dialog open={openIssueDialog} onClose={handleIssueClose} maxWidth="md" fullWidth>
-        <DialogTitle>Issue Ethiopian Nationality Credential</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Subject ID"
-                name="subjectId"
-                value={formState.subjectId}
-                onChange={handleFormChange}
-                disabled
-                helperText="Auto-generated DID for the subject"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Full Name"
-                name="fullName"
-                value={formState.fullName}
-                onChange={handleFormChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Birth Date"
-                name="birthDate"
-                type="date"
-                value={formState.birthDate}
-                onChange={handleFormChange}
-                required
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Birth Place"
-                name="birthPlace"
-                value={formState.birthPlace}
-                onChange={handleFormChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="National ID Number"
-                name="nationalIdNumber"
-                value={formState.nationalIdNumber}
-                onChange={handleFormChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Region"
-                name="region"
-                value={formState.region}
-                onChange={handleFormChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Kebele"
-                name="kebele"
-                value={formState.kebele}
-                onChange={handleFormChange}
-                required
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleIssueClose}>Cancel</Button>
-          <Button 
-            onClick={handleIssueCredential} 
-            variant="contained" 
-            color="primary"
-            disabled={!formState.fullName || !formState.birthDate || !formState.nationalIdNumber}
-          >
-            Issue Credential
-          </Button>
-        </DialogActions>
-      </Dialog>
       
       {/* View Credential Dialog */}
       <Dialog open={openViewDialog} onClose={handleViewClose} maxWidth="md" fullWidth>

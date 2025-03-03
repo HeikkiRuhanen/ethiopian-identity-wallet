@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Midnight Lace Wallet Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      background-color: #f9f9f9;
+    }
+    .log {
+      background-color: #000;
+      color: #0f0;
+      font-family: monospace;
+      padding: 10px;
+      border-radius: 4px;
+      height: 300px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+    button {
+      background-color: #4a69bd;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background-color: #3758a7;
+    }
+    code {
+      background-color: #f1f1f1;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+    .success { color: #2ecc71; }
+    .error { color: #e74c3c; }
+    .debug { color: #f1c40f; }
+  </style>
+</head>
+<body>
+  <h1>Midnight Lace Wallet Extension Test</h1>
+  
+  <div class="card">
+    <h2>Wallet Detection</h2>
+    <p>Status: <span id="detection-status">Checking...</span></p>
+    <div>
+      <button id="check-button">Check Again</button>
+    </div>
+  </div>
+  
+  <div class="card">
+    <h2>Connection Test</h2>
+    <p>Status: <span id="connection-status">Not connected</span></p>
+    <div>
+      <button id="connect-button">Connect Wallet</button>
+    </div>
+  </div>
+  
+  <div class="card">
+    <h2>Diagnostic Tests</h2>
+    <div>
+      <button id="get-network">Get Network ID</button>
+      <button id="get-addresses">Get Addresses</button>
+      <button id="run-all">Run All Tests</button>
+    </div>
+  </div>
+  
+  <div class="card">
+    <h2>Debug Log</h2>
+    <div class="log" id="debug-log"></div>
+  </div>
+
+  <script>
+    // Log helper
+    function log(message, type = 'info') {
+      const logElement = document.getElementById('debug-log');
+      const timestamp = new Date().toTimeString().split(' ')[0];
+      const logItem = document.createElement('div');
+      logItem.classList.add(type);
+      logItem.innerHTML = `[${timestamp}] ${message}`;
+      logElement.appendChild(logItem);
+      logElement.scrollTop = logElement.scrollHeight;
+    }
+    
+    // Check for wallet
+    function checkWallet() {
+      const statusEl = document.getElementById('detection-status');
+      
+      try {
+        log('Checking for Midnight Lace wallet...');
+        
+        // List all window properties that might be wallet-related
+        const allProps = Object.getOwnPropertyNames(window);
+        const walletProps = allProps.filter(p => p.toLowerCase().includes('midnight') || p.toLowerCase().includes('lace'));
+        
+        if (walletProps.length > 0) {
+          log(`Found ${walletProps.length} wallet-related window properties: ${walletProps.join(', ')}`, 'debug');
+        } else {
+          log('No wallet-related window properties found', 'debug');
+        }
+        
+        if (typeof window.midnightLace !== 'undefined') {
+          statusEl.innerHTML = '<span class="success">FOUND ✓</span>';
+          log('Midnight Lace wallet extension detected!', 'success');
+          
+          // Log available methods
+          const methods = Object.getOwnPropertyNames(window.midnightLace)
+            .filter(name => typeof window.midnightLace[name] === 'function');
+          log(`Available methods: ${methods.join(', ')}`, 'debug');
+          
+          return true;
+        } else {
+          statusEl.innerHTML = '<span class="error">NOT FOUND ⨯</span>';
+          log('Midnight Lace wallet extension not detected!', 'error');
+          return false;
+        }
+      } catch (error) {
+        statusEl.innerHTML = '<span class="error">ERROR ⨯</span>';
+        log(`Error checking wallet: ${error.message}`, 'error');
+        return false;
+      }
+    }
+    
+    // Connect to wallet
+    async function connectWallet() {
+      const statusEl = document.getElementById('connection-status');
+      
+      try {
+        if (!window.midnightLace) {
+          statusEl.innerHTML = '<span class="error">Extension not found ⨯</span>';
+          log('Cannot connect: Extension not found', 'error');
+          return;
+        }
+        
+        log('Checking if wallet is already enabled...');
+        const isEnabled = await window.midnightLace.isEnabled();
+        
+        if (isEnabled) {
+          statusEl.innerHTML = '<span class="success">Already connected ✓</span>';
+          log('Wallet is already connected', 'success');
+          return true;
+        }
+        
+        log('Requesting wallet connection via enable()...');
+        const enabled = await window.midnightLace.enable();
+        
+        if (enabled) {
+          statusEl.innerHTML = '<span class="success">Connected ✓</span>';
+          log('Successfully connected to wallet!', 'success');
+          return true;
+        } else {
+          statusEl.innerHTML = '<span class="error">Connection failed ⨯</span>';
+          log('Wallet connection failed', 'error');
+          return false;
+        }
+      } catch (error) {
+        statusEl.innerHTML = '<span class="error">Connection error ⨯</span>';
+        log(`Error connecting to wallet: ${error.message}`, 'error');
+        return false;
+      }
+    }
+    
+    // Get network ID
+    async function getNetworkId() {
+      try {
+        if (!window.midnightLace) {
+          log('Cannot get network ID: Extension not found', 'error');
+          return;
+        }
+        
+        log('Requesting network ID...');
+        const networkId = await window.midnightLace.getNetworkId();
+        log(`Network ID: ${networkId}`, 'success');
+        return networkId;
+      } catch (error) {
+        log(`Error getting network ID: ${error.message}`, 'error');
+      }
+    }
+    
+    // Get addresses
+    async function getAddresses() {
+      try {
+        if (!window.midnightLace) {
+          log('Cannot get addresses: Extension not found', 'error');
+          return;
+        }
+        
+        // Check if wallet is enabled
+        const isEnabled = await window.midnightLace.isEnabled();
+        if (!isEnabled) {
+          log('Wallet is not enabled. Connecting first...', 'debug');
+          await connectWallet();
+        }
+        
+        log('Requesting wallet addresses...');
+        
+        // Try different methods to get addresses
+        let addresses = [];
+        
+        if (typeof window.midnightLace.getUsedAddresses === 'function') {
+          addresses = await window.midnightLace.getUsedAddresses();
+          log(`Got ${addresses.length} addresses via getUsedAddresses()`, 'success');
+        } else if (typeof window.midnightLace.getRewardAddresses === 'function') {
+          addresses = await window.midnightLace.getRewardAddresses();
+          log(`Got ${addresses.length} addresses via getRewardAddresses()`, 'success');
+        } else {
+          log('No method available to get addresses', 'error');
+          return;
+        }
+        
+        if (addresses.length > 0) {
+          addresses.forEach((addr, i) => {
+            log(`Address ${i+1}: ${addr.substring(0, 10)}...${addr.substring(addr.length - 10)}`, 'debug');
+          });
+        } else {
+          log('No addresses found in wallet', 'debug');
+        }
+        
+        return addresses;
+      } catch (error) {
+        log(`Error getting addresses: ${error.message}`, 'error');
+      }
+    }
+    
+    // Run all tests
+    async function runAllTests() {
+      log('Running all tests...');
+      
+      // Clear status displays
+      document.getElementById('detection-status').innerText = 'Checking...';
+      document.getElementById('connection-status').innerText = 'Not connected';
+      
+      // Run tests in sequence
+      const hasWallet = checkWallet();
+      
+      if (!hasWallet) {
+        log('Aborting tests: Wallet not detected', 'error');
+        return;
+      }
+      
+      const connected = await connectWallet();
+      
+      if (!connected) {
+        log('Aborting tests: Could not connect to wallet', 'error');
+        return;
+      }
+      
+      await getNetworkId();
+      await getAddresses();
+      
+      log('All tests completed', 'success');
+    }
+    
+    // Set up event listeners
+    document.getElementById('check-button').addEventListener('click', checkWallet);
+    document.getElementById('connect-button').addEventListener('click', connectWallet);
+    document.getElementById('get-network').addEventListener('click', getNetworkId);
+    document.getElementById('get-addresses').addEventListener('click', getAddresses);
+    document.getElementById('run-all').addEventListener('click', runAllTests);
+    
+    // Run initial check
+    document.addEventListener('DOMContentLoaded', checkWallet);
+  </script>
+</body>
+</html> 

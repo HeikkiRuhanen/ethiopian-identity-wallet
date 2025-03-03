@@ -7,6 +7,8 @@ import Home from './components/Home';
 import CredentialManager from './components/CredentialManager';
 import ProofGenerator from './components/ProofGenerator';
 import AboutInfo from './components/AboutInfo';
+import WalletDebug from './components/WalletDebug';
+import ExtensionDiagnostic from './components/ExtensionDiagnostic';
 
 export default function Page() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -22,6 +24,12 @@ export default function Page() {
         {currentPage === 'credentials' && <CredentialManager />}
         {currentPage === 'proof' && <ProofGenerator />}
         {currentPage === 'info' && <AboutInfo />}
+        {currentPage === 'wallet-debug' && (
+          <>
+            <ExtensionDiagnostic />
+            <WalletDebug />
+          </>
+        )}
       </Container>
     </Layout>
   );
