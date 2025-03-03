@@ -1,8 +1,81 @@
 # Ethiopian National Identity Wallet
 
-## Hackathon Submission for [Midnight ZK Identity Hackathon](https://midnight.network/hackathon/zk-identity-hackathon)
+## Midnight ZK Identity Hackathon Project
 
-A decentralized identity wallet application for Ethiopian citizens that leverages privacy-preserving smart contracts to verify nationality and creates Soul Bound Tokens as proof of verification.
+This project demonstrates a zero-knowledge proof-based identity wallet system for Ethiopian citizens. It leverages Midnight's ZK capabilities to allow users to verify their identity attributes without revealing personal data.
+
+## Key Features
+
+- **ZK Identity Verification**: Prove Ethiopian nationality without revealing personal details
+- **Age Verification**: Zero-knowledge proofs for age verification (18+)
+- **Service Eligibility**: Determine eligibility for various services based on attributes
+- **Digital Credential Management**: Store and manage digital identity credentials
+- **Privacy-Preserving Verification**: Share only what's necessary for verification
+
+## Architecture
+
+The system consists of:
+
+1. **Frontend DApp** - Identity wallet user interface
+2. **Bridge Server** - Handles proof generation and verification 
+3. **Smart Contracts** - Ethiopian nationality verification, age verification, and service eligibility
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- Yarn
+
+### Installation
+
+```bash
+# Install dependencies
+cd examples/identity-wallet
+yarn install
+
+# Start the application
+yarn dev
+```
+
+### Bridge Server Setup
+
+```bash
+# In a separate terminal
+cd examples/identity-wallet-bridge
+yarn install
+node src/server.js
+```
+
+## Project Structure
+
+- `/app` - Next.js application (UI)
+- `/app/components` - React components 
+- `/app/services` - API services and wallet connectivity
+- `/contracts` - Compact language smart contracts
+- `/compiled-contracts` - Compiled contract files
+
+## Technical Implementation
+
+The project implements several Midnight-specific technologies:
+
+- **Compact Language Contracts**: Used to implement the verification logic
+- **Midnight ZK Proofs**: For privacy-preserving identity verification
+- **Lace Wallet Integration**: For user authentication and credential management
+
+## Security Considerations
+
+This wallet implementation ensures:
+- Personal data never leaves the user's device
+- Verification happens through zero-knowledge proofs
+- Identity attributes are cryptographically secured
+
+## Future Enhancements
+
+- Mobile application integration
+- Integration with additional Ethiopian government services
+- Multi-credential support for comprehensive identity management
+- Biometric authentication
 
 ## Project Overview
 
