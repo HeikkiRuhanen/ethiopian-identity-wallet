@@ -1,4 +1,4 @@
-### 🇪🇹 Ethiopian Identity Wallet – Midnight Hackathon 2024
+### 🇪🇹 Ethiopian Identity Wallet – Midnight Hackathon 2025
 🚀 A real-world showcase of Self-Sovereign Identity (SSI) for verifying crypto wallet eligibility for National Stablecoin holding.
 
 ### 📌 Overview
