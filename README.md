@@ -1,10 +1,10 @@
-🇪🇹 Ethiopian Identity Wallet – Midnight Hackathon 2024
+### 🇪🇹 Ethiopian Identity Wallet – Midnight Hackathon 2024
 🚀 A real-world showcase of Self-Sovereign Identity (SSI) for verifying crypto wallet eligibility for National Stablecoin holding.
 
-📌 Overview
+### 📌 Overview
 This project demonstrates how Self-Sovereign Identity (SSI) can be used to verify an individual's eligibility to hold a National Stablecoin in Ethiopia. By leveraging Verifiable Credentials (VCs), Zero-Knowledge Proofs (ZKPs), and the Midnight blockchain, we provide a privacy-preserving solution for on-chain KYC compliance without revealing sensitive user data.
 
-🔹 Key Features:
+### 🔹 Key Features:
 ✅ Zero-Knowledge Proofs (ZKPs): Confirm eligibility without exposing private data
 ✅ Decentralized Identity (DID): Users control their credentials
 ✅ Midnight & Cardano Integration: Secure blockchain verification
@@ -15,7 +15,7 @@ This project demonstrates how Self-Sovereign Identity (SSI) can be used to verif
 ### Project Location
 The Ethiopian National Identity Wallet project can be found in the [examples/identity-wallet](./examples/identity-wallet) directory.
 
-###🧩 How It Works
+### 🧩 How It Works
 User Requests Verification
 
 The user submits their Verifiable Presentation (VP) from an SSI Wallet (e.g., Fairway Wallet).
