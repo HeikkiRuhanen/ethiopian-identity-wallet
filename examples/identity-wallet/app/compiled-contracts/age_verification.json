@@ -1,0 +1,13 @@
+{
+  "name": "age_verification",
+  "bytecode": "mock_bytecode",
+  "functions": [
+    "verify_and_record_nationality",
+    "test_verification",
+    "verify_and_record_age",
+    "create_age_verification_proof",
+    "test_age_verification",
+    "verify_and_record_eligibility",
+    "test_service_eligibility"
+  ]
+}

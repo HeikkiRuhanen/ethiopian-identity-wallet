@@ -1,0 +1,33 @@
+{
+  "name": "identity-wallet-cli",
+  "version": "0.1.0",
+  "description": "CLI for the Identity Wallet contract on Midnight",
+  "type": "module",
+  "main": "dist/cli.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js",
+    "wallet-connect": "node dist/wallet-connect.js"
+  },
+  "keywords": [
+    "midnight",
+    "identity",
+    "wallet",
+    "cli"
+  ],
+  "author": "Midnight Team",
+  "license": "MIT",
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "^0.1.0",
+    "@midnight-ntwrk/midnight-js-contracts": "^0.1.0",
+    "@midnight-ntwrk/midnight-js-network-id": "^0.1.0",
+    "@midnight-ntwrk/midnight-js-types": "^0.1.0",
+    "commander": "^9.4.1",
+    "pino": "^8.7.0",
+    "pino-pretty": "^9.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.9",
+    "typescript": "^4.9.3"
+  }
+}

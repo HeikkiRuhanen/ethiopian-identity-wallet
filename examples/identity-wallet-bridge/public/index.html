@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Identity Wallet DApp - Midnight Network</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .wallet-card {
+      transition: all 0.3s ease;
+    }
+    .wallet-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    .loading {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <header class="mb-8 text-center">
+      <h1 class="text-4xl font-bold text-indigo-800 mb-2">Identity Wallet</h1>
+      <p class="text-lg text-gray-600">on the Midnight Network</p>
+    </header>
+
+    <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6 mb-8">
+      <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Wallet Connection</h2>
+      
+      <div id="wallet-status" class="mb-4 p-4 bg-gray-100 rounded-lg">
+        <p class="text-gray-700">Status: <span id="connection-status" class="font-medium">Disconnected</span></p>
+      </div>
+      
+      <div id="wallet-info" class="hidden mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+        <h3 class="text-xl font-semibold mb-2 text-green-700">Wallet Information</h3>
+        <p class="mb-1"><strong>Address:</strong> <span id="wallet-address" class="font-mono break-all">...</span></p>
+        <p class="mb-1"><strong>Coin Public Key:</strong> <span id="wallet-coin-pubkey" class="font-mono break-all">...</span></p>
+        <p><strong>Network:</strong> <span id="wallet-network" class="font-mono">...</span></p>
+      </div>
+      
+      <div id="connect-error" class="hidden mb-6 p-4 bg-red-50 rounded-lg border border-red-200">
+        <h3 class="text-xl font-semibold mb-2 text-red-700">Connection Error</h3>
+        <p id="error-message" class="text-red-600">...</p>
+      </div>
+      
+      <div class="flex flex-wrap -mx-2">
+        <div class="w-full md:w-1/2 px-2 mb-4">
+          <button id="connect-wallet-btn" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition duration-200">
+            Connect Wallet
+          </button>
+        </div>
+        <div class="w-full md:w-1/2 px-2 mb-4">
+          <button id="refresh-wallet-btn" class="w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg transition duration-200" disabled>
+            Refresh Wallet Info
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6 mb-8">
+      <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Contract Operations</h2>
+      
+      <div id="contract-status" class="mb-4 p-4 bg-gray-100 rounded-lg">
+        <p class="text-gray-700">Contract Address: <span id="contract-address" class="font-mono">None</span></p>
+      </div>
+      
+      <div id="deploy-output" class="hidden mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <h3 class="text-xl font-semibold mb-2 text-gray-700">Deployment Output</h3>
+        <pre id="deploy-result" class="whitespace-pre-wrap font-mono text-sm bg-gray-100 p-4 rounded overflow-auto max-h-40">...</pre>
+      </div>
+      
+      <div class="flex flex-wrap -mx-2">
+        <div class="w-full px-2 mb-4">
+          <button id="simulate-deploy-btn" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition duration-200" disabled>
+            Simulate Contract Deployment
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6">
+      <h2 class="text-2xl font-semibold mb-4 text-indigo-700">API Status</h2>
+      
+      <div id="api-status" class="mb-4 p-4 bg-gray-100 rounded-lg">
+        <p class="text-gray-700">Bridge API: <span id="api-connection-status" class="font-medium">Checking...</span></p>
+      </div>
+      
+      <div class="text-center mt-4">
+        <a href="http://localhost:3500/api/health" target="_blank" class="inline-block py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg transition duration-200">
+          Check API Health
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API configuration
+    const API_BASE_URL = 'http://localhost:3500/api';
+    
+    // DOM elements
+    const connectWalletBtn = document.getElementById('connect-wallet-btn');
+    const refreshWalletBtn = document.getElementById('refresh-wallet-btn');
+    const simulateDeployBtn = document.getElementById('simulate-deploy-btn');
+    const connectionStatus = document.getElementById('connection-status');
+    const walletInfo = document.getElementById('wallet-info');
+    const walletAddress = document.getElementById('wallet-address');
+    const walletCoinPubkey = document.getElementById('wallet-coin-pubkey');
+    const walletNetwork = document.getElementById('wallet-network');
+    const connectError = document.getElementById('connect-error');
+    const errorMessage = document.getElementById('error-message');
+    const contractAddress = document.getElementById('contract-address');
+    const deployOutput = document.getElementById('deploy-output');
+    const deployResult = document.getElementById('deploy-result');
+    const apiConnectionStatus = document.getElementById('api-connection-status');
+    
+    // API health check
+    async function checkApiHealth() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/health`);
+        const data = await response.json();
+        
+        if (data.status === 'ok') {
+          apiConnectionStatus.textContent = 'Connected';
+          apiConnectionStatus.classList.add('text-green-600');
+        } else {
+          apiConnectionStatus.textContent = 'Error';
+          apiConnectionStatus.classList.add('text-red-600');
+        }
+      } catch (error) {
+        console.error('API Health check failed:', error);
+        apiConnectionStatus.textContent = 'Unreachable';
+        apiConnectionStatus.classList.add('text-red-600');
+      }
+    }
+    
+    // Connect to wallet
+    async function connectWallet() {
+      // Reset UI
+      connectError.classList.add('hidden');
+      
+      // Update button state
+      const originalText = connectWalletBtn.textContent;
+      connectWalletBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Connecting...';
+      connectWalletBtn.disabled = true;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/wallet/connect`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Update connection status
+          connectionStatus.textContent = 'Connected';
+          connectionStatus.classList.add('text-green-600');
+          
+          // Display wallet info
+          walletInfo.classList.remove('hidden');
+          walletAddress.textContent = data.walletInfo.address || 'Not available';
+          walletCoinPubkey.textContent = data.walletInfo.coinPublicKey || 'Not available';
+          walletNetwork.textContent = data.walletInfo.networkId || 'testnet';
+          
+          // Enable other buttons
+          refreshWalletBtn.disabled = false;
+          simulateDeployBtn.disabled = false;
+        } else {
+          // Show error
+          connectError.classList.remove('hidden');
+          errorMessage.textContent = data.message || 'Failed to connect wallet';
+          
+          connectionStatus.textContent = 'Connection Failed';
+          connectionStatus.classList.add('text-red-600');
+        }
+      } catch (error) {
+        console.error('Wallet connection error:', error);
+        connectError.classList.remove('hidden');
+        errorMessage.textContent = error.message || 'An unexpected error occurred';
+        
+        connectionStatus.textContent = 'Connection Error';
+        connectionStatus.classList.add('text-red-600');
+      } finally {
+        // Restore button state
+        connectWalletBtn.innerHTML = originalText;
+        connectWalletBtn.disabled = false;
+      }
+    }
+    
+    // Refresh wallet info
+    async function refreshWalletInfo() {
+      // Update button state
+      const originalText = refreshWalletBtn.textContent;
+      refreshWalletBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-800 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Refreshing...';
+      refreshWalletBtn.disabled = true;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/wallet/info`);
+        const data = await response.json();
+        
+        if (data.success) {
+          // Display wallet info
+          walletInfo.classList.remove('hidden');
+          walletAddress.textContent = data.walletInfo.address || 'Not available';
+          walletCoinPubkey.textContent = data.walletInfo.coinPublicKey || 'Not available';
+          walletNetwork.textContent = data.walletInfo.networkId || 'testnet';
+          
+          // Update connection status
+          connectionStatus.textContent = 'Connected';
+          connectionStatus.classList.add('text-green-600');
+          
+          // Enable deploy button
+          simulateDeployBtn.disabled = false;
+        } else {
+          // Show error
+          connectError.classList.remove('hidden');
+          errorMessage.textContent = data.message || 'Failed to get wallet info';
+          
+          connectionStatus.textContent = 'Disconnected';
+          connectionStatus.classList.add('text-red-600');
+          
+          // Hide wallet info
+          walletInfo.classList.add('hidden');
+        }
+      } catch (error) {
+        console.error('Refresh wallet error:', error);
+        connectError.classList.remove('hidden');
+        errorMessage.textContent = error.message || 'An unexpected error occurred';
+      } finally {
+        // Restore button state
+        refreshWalletBtn.innerHTML = originalText;
+        refreshWalletBtn.disabled = false;
+      }
+    }
+    
+    // Simulate contract deployment
+    async function simulateDeploy() {
+      // Update button state
+      const originalText = simulateDeployBtn.textContent;
+      simulateDeployBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Simulating...';
+      simulateDeployBtn.disabled = true;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/contract/simulate-deploy`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        // Show deploy output
+        deployOutput.classList.remove('hidden');
+        deployResult.textContent = data.output || 'No output available';
+        
+        if (data.success && data.contractAddress) {
+          contractAddress.textContent = data.contractAddress;
+        }
+      } catch (error) {
+        console.error('Simulate deploy error:', error);
+        deployOutput.classList.remove('hidden');
+        deployResult.textContent = `Error: ${error.message}`;
+      } finally {
+        // Restore button state
+        simulateDeployBtn.innerHTML = originalText;
+        simulateDeployBtn.disabled = false;
+      }
+    }
+    
+    // Event listeners
+    connectWalletBtn.addEventListener('click', connectWallet);
+    refreshWalletBtn.addEventListener('click', refreshWalletInfo);
+    simulateDeployBtn.addEventListener('click', simulateDeploy);
+    
+    // Check API health on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      checkApiHealth();
+      // Check for existing wallet connection
+      refreshWalletInfo();
+    });
+  </script>
+</body>
+</html> 

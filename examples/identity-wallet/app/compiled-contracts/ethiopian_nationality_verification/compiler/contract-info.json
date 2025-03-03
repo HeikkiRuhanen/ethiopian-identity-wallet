@@ -1,0 +1,87 @@
+{
+  "circuits": [
+    {
+      "name": "verify_and_record_nationality",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "credential",
+          "type": {
+            "type-name": "Struct",
+            "name": "EthiopianNationalityCredential",
+            "elements": [
+              {
+                "name": "id",
+                "type": {
+                  "type-name": "Field"
+                }
+              },
+              {
+                "name": "issuer",
+                "type": {
+                  "type-name": "Field"
+                }
+              },
+              {
+                "name": "issuedAt",
+                "type": {
+                  "type-name": "Field"
+                }
+              },
+              {
+                "name": "expiresAt",
+                "type": {
+                  "type-name": "Field"
+                }
+              },
+              {
+                "name": "subject",
+                "type": {
+                  "type-name": "Field"
+                }
+              },
+              {
+                "name": "nationality",
+                "type": {
+                  "type-name": "Field"
+                }
+              },
+              {
+                "name": "signature",
+                "type": {
+                  "type-name": "Vector",
+                  "length": 2,
+                  "type": {
+                    "type-name": "Field"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "current_time",
+          "type": {
+            "type-name": "Field"
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "test_verification",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    }
+  ]
+}

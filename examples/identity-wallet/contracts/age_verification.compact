@@ -1,0 +1,67 @@
+pragma language_version >= 0.14.0;
+import CompactStandardLibrary;
+export ledger age_verifications: Map<Field, Boolean>;
+struct EthiopianIdCredential {
+id: Field,
+issuer: Field,
+issuedAt: Field,
+expiresAt: Field,
+subject: Field,
+birthDateInDays: Field,
+nationality: Field,
+signature: Vector<2, Field>
+}
+circuit get_authorized_issuer(): Field {
+return 123456789012345678901234567890;
+}
+circuit get_days_in_year(): Field {
+return 365;
+}
+circuit calculate_age(birth_date_days: Field, current_date_days: Field): Field {
+const birth_uint = birth_date_days as Uint<32>;
+const current_uint = current_date_days as Uint<32>;
+const days_diff = current_uint - birth_uint;
+return days_diff / get_days_in_year();
+}
+circuit is_above_age(birth_date_days: Field, current_date_days: Field, age_threshold: Field): Boolean {
+const age = calculate_age(birth_date_days, current_date_days);
+const age_uint = age as Uint<16>;
+const threshold_uint = age_threshold as Uint<16>;
+return age_uint >= threshold_uint;
+}
+circuit is_credential_valid(credential: EthiopianIdCredential, current_time: Field): Boolean {
+const expires_at_uint = credential.expiresAt as Uint<64>;
+const current_time_uint = current_time as Uint<64>;
+return expires_at_uint >= current_time_uint;
+}
+circuit is_issuer_authorized(issuer: Field): Boolean {
+return issuer == get_authorized_issuer();
+}
+export circuit verify_and_record_age(
+credential: EthiopianIdCredential, 
+current_date_days: Field,
+current_time: Field,
+age_threshold: Field
+): [] {
+const issuer_valid = is_issuer_authorized(credential.issuer);
+const not_expired = is_credential_valid(credential, current_time);
+const above_age = is_above_age(credential.birthDateInDays, current_date_days, age_threshold);
+const is_valid = issuer_valid && not_expired && above_age;
+const verification_key = credential.subject + age_threshold;
+age_verifications.insert(disclose(verification_key), disclose(is_valid));
+}
+witness create_test_id_credential(): EthiopianIdCredential;
+export circuit test_age_verification(): [] {
+const test_credential = create_test_id_credential();
+const current_time = 1677609600;
+const current_date_days = current_time / 86400;
+const age_threshold = 18;
+verify_and_record_age(
+test_credential,
+current_date_days,
+current_time,
+age_threshold
+);
+const verification_key = test_credential.subject + age_threshold;
+const is_verified = age_verifications.lookup(verification_key);
+} 

@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "file": "index.cjs",
+  "sourceRoot": "../../../../contracts/",
+  "sources": ["ethiopian_nationality_verification.compact"],
+  "names": [],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAAA;;;;;;;;;;MAwEA,AAAA,6BAUC;;;;cATG,YAA0C;cAC1C,cAAmB;;;;;;;;;;;;;;;;;;;;;;yCADnB,YAA0C,+BAC1C,cAAmB;;;;;;;;;gEADnB,YAA0C;gEAC1C,cAAmB;;;OAQtB;MAOD,AAAA,iBAYC;;;;;;;;;;;;;;;;;;;;OAAA;;;;;;GAAE;EArGH;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IAKA;;;;;;;;;;uDAA6D;;;;;;;GAgG1D;EA3EH,AAAA,yBAGC;;GAAA;EAGD,AAAA,kCAGC;;GAAA;EAGD,AAAA,uBAOC;;0BAP2B,YAA0C;0BAAE,cAAmB;;UAEvF,iBAAyD;;;;iCAAjC,YAAU;UAClC,mBAAmD;;;;mCAAzB,cAAY;aAG/B,iBAAe,GAAI,mBAAiB;GAC9C;EAGD,AAAA,wBAEC,4BAF4B,QAAa;WAC/B,QAAM;;;GAChB;EAGD,AAAA,gCAeC;;mCAdG,YAA0C;mCAC1C,cAAmB;;UAGnB,cAA6D;;yDAAnB,YAAU;UAGpD,aAAkE;;uDAA1B,YAAU;uDAAE,cAAY;UAGhE,cAAgF,GAA3D,YAAU;;;;WAGxB,cAAY,IAAI,aAAW,IAAI,cAAY;GACrD;EAID,AAAA,iCAUC;;oCATG,YAA0C;oCAC1C,cAAmB;;UAGnB,UAAwE;;6DAA1B,YAAU;6DAAE,cAAY;UAItE,KAAyB,GAAiB,YAAU;UAApD,KAAyB,GAA+C,UAAQ;IAAhF;;;;;;;;;;yGAAA,KAAyB;;;yGAAzB,KAAyB;;;sDAAA;;GAC5B;EAID,AAAA,0BAAiE;;0DAAjE,sBAAiE;;;;;;;;;;;;;GAAA;EAGjE,AAAA,qBAYC;UAVG,iBAAiD;;UAGjD,cAAgC;;;2CAGF,iBAAe;2CAAE,cAAY;QAGvC,KAAyB;UAA7C,aAA8E,YAAzB,iBAAe;mDAAhD;;;;;;;;;;;;;;4HAAA,KAAyB;;;sGAAA;;GAChD;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IAhGD;;;;uCAAA;;;;;;;;;;;;;;;;0FAA6D;;;;;uCAA7D;;;;;;;;;;;;0FAA6D;;;;;;;;;;;;uCAA7D;;;;;;;;;;;;;;;0FAA6D;;;;;;;;;;;;uCAA7D;;;;;;;;;;;;;;;;;0FAA6D;;;;;;;;KAAA;;;;;;;;;;;;;;;;"
+}
