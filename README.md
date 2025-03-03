@@ -5,10 +5,10 @@
 This project demonstrates how Self-Sovereign Identity (SSI) can be used to verify an individual's eligibility to hold a National Stablecoin in Ethiopia. By leveraging Verifiable Credentials (VCs), Zero-Knowledge Proofs (ZKPs), and the Midnight blockchain, we provide a privacy-preserving solution for on-chain KYC compliance without revealing sensitive user data.
 
 ### 🔹 Key Features:
-✅ Zero-Knowledge Proofs (ZKPs): Confirm eligibility without exposing private data
-✅ Decentralized Identity (DID): Users control their credentials
-✅ Midnight & Cardano Integration: Secure blockchain verification
-✅ Use Case: Ethiopian citizenship verification for stablecoin access
+✅ Zero-Knowledge Proofs (ZKPs): Confirm eligibility without exposing private data n/
+✅ Decentralized Identity (DID): Users control their credentials n/
+✅ Midnight & Cardano Integration: Secure blockchain verification n/
+✅ Use Case: Ethiopian citizenship verification for stablecoin access n/
 
 📍 Official Hackathon Submission: Midnight ZK-Identity Hackathon
 
