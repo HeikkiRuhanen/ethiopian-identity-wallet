@@ -1,19 +1,37 @@
-# Midnight Examples Repository
+🇪🇹 Ethiopian Identity Wallet – Midnight Hackathon 2024
+🚀 A real-world showcase of Self-Sovereign Identity (SSI) for verifying crypto wallet eligibility for National Stablecoin holding.
 
-## Featured Project: Ethiopian National Identity Wallet
+📌 Overview
+This project demonstrates how Self-Sovereign Identity (SSI) can be used to verify an individual's eligibility to hold a National Stablecoin in Ethiopia. By leveraging Verifiable Credentials (VCs), Zero-Knowledge Proofs (ZKPs), and the Midnight blockchain, we provide a privacy-preserving solution for on-chain KYC compliance without revealing sensitive user data.
 
-**Hackathon Submission for [Midnight ZK Identity Hackathon](https://midnight.network/hackathon/zk-identity-hackathon)**
+🔹 Key Features:
+✅ Zero-Knowledge Proofs (ZKPs): Confirm eligibility without exposing private data
+✅ Decentralized Identity (DID): Users control their credentials
+✅ Midnight & Cardano Integration: Secure blockchain verification
+✅ Use Case: Ethiopian citizenship verification for stablecoin access
 
-This repository contains a featured project developed for the Midnight ZK Identity Hackathon - an Ethiopian National Identity Wallet that leverages zero-knowledge proofs to provide privacy-preserving identity verification.
+📍 Official Hackathon Submission: Midnight ZK-Identity Hackathon
 
 ### Project Location
 The Ethiopian National Identity Wallet project can be found in the [examples/identity-wallet](./examples/identity-wallet) directory.
 
-### Key Features
-- Zero-knowledge nationality verification for Ethiopian citizens
-- Age verification without revealing birth date
-- Service eligibility checks while preserving privacy
-- Secure credential management
+###🧩 How It Works
+User Requests Verification
+
+The user submits their Verifiable Presentation (VP) from an SSI Wallet (e.g., Fairway Wallet).
+Identity Verification via ZKP
+
+The system verifies signatures, and ensures credentials are not revoked.
+A Zero-Knowledge Proof (ZKP) is generated to confirm:
+✅ The user is Ethiopian
+
+### Blockchain Proof Generation
+
+The proof is stored on Midnight and linked to the user's crypto wallet by minting Soul Bound Token.
+
+### Stablecoin Eligibility Confirmation
+
+The user can now hold and transact with the Ethiopian National Stablecoin without revealing personal information on-chain.
 
 ### Getting Started
 Please refer to the project's [dedicated README](./examples/identity-wallet/README.md) for setup instructions and detailed documentation.
