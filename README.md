@@ -2,7 +2,7 @@
 🚀 A real-world showcase of Self-Sovereign Identity (SSI) for verifying crypto wallet eligibility for National Stablecoin holding.
 
 ### 📌 Overview
-This project demonstrates how Self-Sovereign Identity (SSI) can be used to verify an individual's eligibility to hold a National Stablecoin in Ethiopia. By leveraging Verifiable Credentials (VCs), Zero-Knowledge Proofs (ZKPs), and the Midnight blockchain, we provide a privacy-preserving solution for on-chain KYC compliance without revealing sensitive user data.
+This project demonstrates how Self-Sovereign Identity (SSI) can be used to verify an individual's eligibility to hold a National Stablecoin in Ethiopia. By leveraging Verifiable Credentials (VCs), Zero-Knowledge Proofs (ZKPs), and the Midnight blockchain, we provide a privacy-preserving solution for on-chain compliance without revealing sensitive user data.
 
 ### 🔹 Key Features:
 ✅ Zero-Knowledge Proofs (ZKPs): Confirm eligibility without exposing private data  
