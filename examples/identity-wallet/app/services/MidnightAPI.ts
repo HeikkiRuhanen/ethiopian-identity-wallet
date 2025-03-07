@@ -2,7 +2,7 @@
 
 // Client-side config
 export const MIDNIGHT_CONFIG = {
-  proofServerUrl: typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_PROOF_SERVER_URL || 'http://localhost:8080' : '',
+  proofServerUrl: typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_PROOF_SERVER_URL || 'http://localhost:3500' : '',
   indexerUrl: typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_INDEXER_URL || 'http://localhost:8081' : '',
   networkId: typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_NETWORK_ID || 'testnet' : '',
   useRealProofs: typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_USE_REAL_PROOFS === 'true' : false,
